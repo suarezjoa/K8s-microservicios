@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-productos
+  labels:
+    app: app-productos
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: app-productos
+  template:
+    metadata:
+      labels:
+        app: app-productos
+    spec:
+      containers:
+      - name: app-productos
+        image: joacosua/app-microservicios:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        env:
+        - name: REACT_APP_API_URL
+          value: "http://192.168.59.21:80"  # URL del servicio LoadBalancer de la API 

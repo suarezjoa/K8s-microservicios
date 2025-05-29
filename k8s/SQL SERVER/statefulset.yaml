@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mssql #nombre de la carga de trabajo StatefulSet, el nombre de la instancia de SQL Server se deriva de esto. Sugerimos mantener este nombre igual que el .spec.template.metadata.labels, .spec.selector.matchLabels y .spec.serviceName para evitar confusiones.
+  namespace: ms
+spec:
+  serviceName: "mssql" #serviceName es el nombre del servicio que rige este StatefulSet. Este servicio debe existir antes de StatefulSet, y es responsable de la identidad de red del conjunto.
+  replicas: 1 # solo un pod, con una instancia de SQL Server implementada.
+  selector:
+    matchLabels: 
+      app: mssql # esto tiene que ser lo mismo que .spec.template.metadata.labels
+  template:
+    metadata:
+      labels:
+        app: mssql # esto tiene que ser lo mismo que .spec.selector.matchLabels, como se documenta [aquí] (https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/):
+    spec:
+      securityContext:
+        fsGroup: 10001  
+      containers:
+        - name: mssql #nombre del contenedor, debe ser el mismo que el nombre de la carga de trabajo StatefulSet.
+          image: mcr.microsoft.com/mssql/server:2022-latest #imagen de SQL Server que se utilizará para la instancia.
+          ports:
+            - containerPort: 1433 #puerto que se utilizará para la instancia de SQL Server.
+              name: tcpsql
+          env:
+            - name: ACCEPT_EULA
+              value: "Y" #aceptar la licencia de usuario final.
+            - name: MSSQL_ENABLE_HADR
+              value: "1" #habilitar la alta disponibilidad.
+            - name: MSSQL_AGENT_ENABLED
+              value: "1" #habilitar el agente de SQL Server.
+            - name: MSSQL_SA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mssql
+                  key: MSSQL_SA_PASSWORD
+          volumeMounts:
+            - name: mssql
+              mountPath: /var/opt/mssql
+  volumeClaimTemplates:
+    - metadata:
+        name: mssql #nombre del volumen, debe ser el mismo que el nombre de la carga de trabajo StatefulSet.
+      spec:
+        accessModes:
+          - ReadWriteOnce #modo de acceso al volumen, solo lectura o lectura y escritura.
+        storageClassName: standard
+        resources:
+          requests:
+            storage: 2Gi #tamaño del volumen.
+        

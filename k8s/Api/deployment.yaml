@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    app: api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        image: joacosua/api:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DB_USER
+          value: "sa"
+        - name: DB_PASSWORD
+          value: "YourStrong1Passw0rd"
+        - name: DB_NAME
+          value: "ecommerce"
+        - name: DB_SERVER
+          value: "mssql"  # Este es el nombre del servicio de SQL Server en el cluster
+        - name: PORT
+          value: "3000" 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-service
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 3000
+    protocol: TCP
+  selector:
+    app: api
