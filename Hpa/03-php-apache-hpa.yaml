@@ -1,0 +1,21 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: php-apache # nombre del hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment # tipo de recurso que se va a autoscalar
+    name: php-apache # nombre del recurso que se va a autoscalar
+  minReplicas: 1 # numero minimo de replicas
+  maxReplicas: 10 # numero maximo de replicas
+  metrics:
+  - type: Resource # tipo de metricas que se va a utilizar
+    resource:
+      name: cpu # nombre de la metrica
+      target:
+        type: Utilization # tipo de metricas que se va a utilizar
+        averageUtilization: 50 # promedio de utilizacion de la cpu
+
+# while ($true) { Invoke-WebRequest -Uri "http://192.168.59.22/" -ErrorAction SilentlyContinue | Out-Null } 
+# comando de prueba para generar carga en el cluster
