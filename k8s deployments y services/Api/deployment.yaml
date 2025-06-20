@@ -5,7 +5,7 @@ metadata:
   labels:
     app: api
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: api
@@ -30,7 +30,14 @@ spec:
         - name: DB_SERVER
           value: "mssql"  # Este es el nombre del servicio de SQL Server en el cluster
         - name: PORT
-          value: "3000" 
+          value: "3000"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
 ---
 apiVersion: v1
 kind: Service
